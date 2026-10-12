@@ -1,0 +1,205 @@
+
+* {
+  box-sizing: border-box;
+}
+
+.ticket-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 18px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(142, 36, 54, 0.28), transparent 55%),
+    #160d12;
+  color: #f8eee4;
+  font-family: Inter, system-ui, sans-serif;
+}
+
+.ticket-card,
+.ticket-error {
+  width: min(430px, 100%);
+  padding: 32px 28px;
+  text-align: center;
+  background: #f8f0e7;
+  color: #26161b;
+  border: 1px solid rgba(225, 192, 169, 0.6);
+  border-radius: 20px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+}
+
+.ticket-brand {
+  margin-bottom: 34px;
+  color: #762737;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2.8px;
+}
+
+.ticket-eyebrow {
+  margin: 0 0 12px;
+  color: #963b48;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+}
+
+.ticket-card h1,
+.ticket-error h1 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 38px;
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+.ticket-name {
+  margin: 12px 0 0;
+  color: #75646a;
+  font-size: 14px;
+}
+
+/* Keep the QR code on a clean, light surface for reliable scanning. */
+.ticket-qr {
+  display: block;
+  width: 220px;
+  height: 220px;
+  max-width: 100%;
+  margin: 30px auto 26px;
+  padding: 8px;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 8px;
+}
+
+.ticket-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px 12px;
+  padding: 22px 0;
+  border-top: 1px solid #e3d4ca;
+  border-bottom: 1px solid #e3d4ca;
+  text-align: left;
+}
+
+.ticket-details > div {
+  min-width: 0;
+}
+
+.ticket-details span {
+  display: block;
+  margin-bottom: 7px;
+  color: #8c7779;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.ticket-details strong {
+  display: block;
+  overflow-wrap: anywhere;
+  color: #2a171d;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.ticket-id {
+  margin: 22px 0 0;
+  color: #826c70;
+  font-size: 11px;
+  letter-spacing: 1px;
+  overflow-wrap: anywhere;
+}
+
+.ticket-instruction {
+  margin: 16px 0 0;
+  color: #75646a;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.ticket-save-button {
+  width: 100%;
+  margin-top: 24px;
+  padding: 15px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: #762737;
+  color: #fff7f0;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.ticket-save-button:hover {
+  background: #5d1c2a;
+}
+
+.ticket-save-button:active {
+  transform: scale(0.99);
+}
+
+.ticket-loading {
+  color: #f8eee4;
+  font-size: 14px;
+}
+
+.ticket-error {
+  margin: auto;
+}
+
+.ticket-error p {
+  margin: 16px 0 0;
+  color: #75646a;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+@media print {
+  @page {
+    margin: 10mm;
+  }
+
+  .ticket-page {
+    min-height: auto;
+    padding: 0;
+    background: #fff;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .ticket-card {
+    width: 100%;
+    max-width: 430px;
+    margin: 0 auto;
+    box-shadow: none;
+  }
+
+  .ticket-save-button {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .ticket-page {
+    padding: 18px 12px;
+  }
+
+  .ticket-card,
+  .ticket-error {
+    padding: 27px 20px;
+    border-radius: 16px;
+  }
+
+  .ticket-brand {
+    margin-bottom: 28px;
+  }
+
+  .ticket-qr {
+    width: 200px;
+    height: 200px;
+    margin-top: 26px;
+  }
+}

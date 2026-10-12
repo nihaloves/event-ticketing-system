@@ -1,0 +1,1157 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  color: #202020;
+  background: #f8f6f1;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: #f8f6f1;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.page {
+  min-height: 100vh;
+
+  background:
+    radial-gradient(
+      circle at 90% 20%,
+      rgba(190, 165, 125, 0.07),
+      transparent 25%
+    ),
+    #f8f6f1;
+}
+
+/* ---------------- TOP BAR ---------------- */
+
+.topbar {
+  height: 76px;
+
+  padding: 0 6%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  border-bottom: 1px solid #e5e1d9;
+}
+
+.icon-button {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  background: transparent;
+
+  color: #242424;
+
+  cursor: pointer;
+}
+
+.back-arrow {
+  font-size: 25px;
+  font-weight: 300;
+}
+
+.brand-name {
+  color: #242424;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  letter-spacing: 2.5px;
+}
+
+.menu-icon {
+  width: 20px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.menu-icon span {
+  display: block;
+
+  width: 20px;
+  height: 1px;
+
+  background: #242424;
+}
+
+/* ---------------- CONTENT ---------------- */
+
+.content {
+  width: min(900px, calc(100% - 40px));
+
+  margin: 0 auto;
+
+  padding: 75px 0 90px;
+}
+
+/* ---------------- HERO ---------------- */
+
+.hero {
+  max-width: 720px;
+}
+
+.eyebrow {
+  margin: 0 0 20px;
+
+  color: #ad9060;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  letter-spacing: 3px;
+}
+
+.hero h1 {
+  margin: 0;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: clamp(50px, 8vw, 82px);
+  font-weight: 400;
+
+  line-height: 0.95;
+  letter-spacing: -4px;
+}
+
+.description {
+  max-width: 520px;
+
+  margin: 28px 0 0;
+
+  color: #777;
+
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+/* ---------------- EVENT INFO ---------------- */
+
+.event-card {
+  margin-top: 58px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 30px 34px;
+
+  background: rgba(239, 235, 227, 0.75);
+
+  border: 1px solid #e7e1d7;
+  border-radius: 22px;
+}
+
+.event-item {
+  flex: 1;
+}
+
+.label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #8b8882;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  letter-spacing: 1.8px;
+}
+
+.event-item strong {
+  display: block;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  color: #222;
+
+  font-size: 25px;
+  font-weight: 400;
+}
+
+.event-item small {
+  display: block;
+
+  margin-top: 5px;
+
+  color: #9b927f;
+
+  font-size: 12px;
+}
+
+.event-divider {
+  width: 1px;
+  height: 55px;
+
+  margin: 0 35px;
+
+  background: #d9d1c5;
+}
+
+/* ---------------- REGISTRATION ---------------- */
+
+.registration {
+  max-width: 650px;
+
+  margin-top: 68px;
+}
+
+.registration h2 {
+  margin: 0 0 30px;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  color: #222;
+
+  font-size: 38px;
+  font-weight: 400;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ---------------- INPUTS ---------------- */
+
+.input-card {
+  min-height: 92px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 20px 24px;
+
+  background: rgba(255, 255, 255, 0.52);
+
+  border: 1px solid #dedbd5;
+  border-radius: 18px;
+
+  cursor: text;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.input-card:focus-within {
+  background: #fff;
+
+  border-color: #b5a78e;
+
+  box-shadow:
+    0 8px 30px rgba(50, 45, 35, 0.05);
+}
+
+.input-content {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.input-label {
+  color: #85817a;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  letter-spacing: 1.5px;
+}
+
+.input-content input {
+  width: 100%;
+
+  padding: 0;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  color: #222;
+
+  font-size: 16px;
+}
+
+.input-content input::placeholder {
+  color: #aaa7a1;
+}
+
+/* ---------------- QUANTITY ---------------- */
+
+.quantity-card {
+  cursor: default;
+}
+
+.quantity-description {
+  color: #8c8881;
+
+  font-size: 14px;
+}
+
+.quantity-control {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.quantity-control button {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #d8d3ca;
+  border-radius: 50%;
+
+  background: transparent;
+
+  color: #333;
+
+  font-size: 20px;
+  font-weight: 300;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.quantity-control button:hover:not(:disabled) {
+  background: #eeeae2;
+
+  border-color: #c7c0b4;
+}
+
+.quantity-control button:disabled {
+  opacity: 0.3;
+
+  cursor: not-allowed;
+}
+
+.quantity-control > span {
+  min-width: 18px;
+
+  color: #222;
+
+  font-size: 17px;
+
+  text-align: center;
+}
+
+/* ---------------- TOTAL ---------------- */
+
+.total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 12px 4px 4px;
+}
+
+.total-row span {
+  color: #85817a;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  letter-spacing: 1.5px;
+}
+
+.total-row strong {
+  color: #222;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 27px;
+  font-weight: 400;
+}
+
+/* ---------------- BUTTON ---------------- */
+
+.continue-button {
+  min-height: 64px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 16px;
+
+  margin-top: 8px;
+
+  border: none;
+  border-radius: 32px;
+
+  background: #242424;
+
+  color: #fff;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.continue-button:hover:not(:disabled) {
+  background: #111;
+
+  transform: translateY(-1px);
+}
+
+.continue-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.continue-button:disabled {
+  opacity: 0.55;
+
+  cursor: wait;
+}
+
+.arrow {
+  font-size: 22px;
+
+  font-weight: 300;
+}
+
+/* ---------------- MESSAGE ---------------- */
+
+.message {
+  margin-top: 16px;
+
+  padding: 14px 16px;
+
+  border-radius: 12px;
+
+  background: #eeeae2;
+
+  color: #555;
+
+  font-size: 13px;
+
+  line-height: 1.5;
+}
+
+.secure-text {
+  margin: 18px 0 0;
+
+  color: #99958e;
+
+  font-size: 12px;
+
+  text-align: center;
+}
+
+/* ---------------- PAYMENT ---------------- */
+
+.payment-section {
+  max-width: 650px;
+  margin-top: 68px;
+}
+
+.payment-eyebrow {
+  margin: 0 0 18px;
+
+  color: #ad9060;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  letter-spacing: 2px;
+}
+
+.payment-section h2 {
+  margin: 0;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  color: #222;
+
+  font-size: 46px;
+  font-weight: 400;
+  line-height: 1.05;
+}
+
+.payment-description {
+  max-width: 500px;
+
+  margin: 20px 0 32px;
+
+  color: #777;
+
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.payment-card {
+  padding: 28px;
+
+  background: rgba(255, 255, 255, 0.58);
+
+  border: 1px solid #dedbd5;
+  border-radius: 22px;
+}
+
+.payment-summary {
+  display: grid;
+  grid-template-columns: 1fr 0.7fr 1fr;
+  gap: 20px;
+}
+
+.payment-summary span {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #85817a;
+
+  font-size: 10px;
+  font-weight: 600;
+
+  letter-spacing: 1.5px;
+}
+
+.payment-summary strong {
+  color: #222;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.payment-divider {
+  height: 1px;
+
+  margin: 28px 0;
+
+  background: #e2ded7;
+}
+
+.upi-label {
+  margin: 0 0 8px;
+
+  color: #85817a;
+
+  font-size: 10px;
+  font-weight: 600;
+
+  letter-spacing: 1.5px;
+}
+
+.upi-id {
+  margin: 0 0 22px;
+
+  color: #222;
+
+  font-size: 16px;
+}
+
+.ticket-reference {
+  margin: 16px 0 0;
+
+  color: #99958e;
+
+  font-size: 12px;
+
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+
+  .payment-section {
+    margin-top: 52px;
+  }
+
+  .payment-section h2 {
+    font-size: 38px;
+  }
+
+  .payment-card {
+    padding: 22px;
+    border-radius: 18px;
+  }
+
+  .payment-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .payment-summary > div:last-child {
+    grid-column: 1 / -1;
+  }
+
+}
+
+/* ---------------- MOBILE ---------------- */
+
+@media (max-width: 600px) {
+
+  .topbar {
+    height: 68px;
+
+    padding: 0 18px;
+  }
+
+  .brand-name {
+    font-size: 12px;
+
+    letter-spacing: 2px;
+  }
+
+  .content {
+    width: calc(100% - 32px);
+
+    padding: 48px 0 70px;
+  }
+
+  .hero h1 {
+    font-size: 55px;
+
+    letter-spacing: -3px;
+  }
+
+  .description {
+    margin-top: 24px;
+
+    font-size: 16px;
+  }
+
+  .event-card {
+    padding: 22px 20px;
+
+    border-radius: 18px;
+  }
+
+  .event-item strong {
+    font-size: 20px;
+  }
+
+  .event-divider {
+    margin: 0 22px;
+  }
+
+  .registration {
+    margin-top: 52px;
+  }
+
+  .registration h2 {
+    font-size: 34px;
+  }
+
+  .input-card {
+    min-height: 88px;
+
+    padding: 18px;
+
+    border-radius: 17px;
+  }
+
+  .quantity-control {
+    gap: 12px;
+  }
+
+  .quantity-control button {
+    width: 34px;
+    height: 34px;
+  }
+
+  .continue-button {
+    min-height: 62px;
+  }
+}
+
+.payment-qr {
+  display: flex;
+  justify-content: center;
+  margin: 24px 0;
+}
+
+.payment-confirm-button {
+  width: 100%;
+  margin-top: 12px;
+  padding: 14px 20px;
+  border: 1px solid #14213d;
+  border-radius: 999px;
+  background: transparent;
+  color: #14213d;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.payment-confirm-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
+/* ===== CINEMA TALKIES: POSTER-FIRST LANDING ===== */
+
+:root {
+  color: #f7e5d7;
+  background: #100606;
+}
+
+html,
+body,
+#root {
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background: #100606;
+}
+
+.page {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #100606;
+  color: #f7e5d7;
+}
+
+.poster-background {
+  position: fixed;
+  z-index: -2;
+  inset: -30px;
+  overflow: hidden;
+  background: #170606;
+}
+
+.poster-background img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 35%;
+  filter: blur(18px) brightness(0.3) saturate(0.85);
+  transform: scale(1.08);
+}
+
+.poster-landing {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 20px 32px;
+  background:
+    radial-gradient(ellipse at 50% 35%, rgba(130, 10, 10, 0.22), transparent 62%),
+    linear-gradient(180deg, #190606 0%, #100606 100%);
+}
+
+.poster-image {
+  display: block;
+  width: auto;
+  height: min(76svh, 900px);
+  max-width: 100%;
+  object-fit: contain;
+  object-position: center top;
+  filter: drop-shadow(0 18px 45px rgba(0, 0, 0, 0.4));
+}
+
+.landing-footer {
+  width: min(420px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 13px;
+  padding-top: 20px;
+  text-align: center;
+}
+
+.landing-footer > p {
+  margin: 0;
+  color: #c7a79b;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 3px;
+}
+
+.book-button {
+  width: 100%;
+  min-height: 58px;
+  padding: 16px 24px;
+  border: 1px solid rgba(255, 222, 204, 0.28);
+  border-radius: 5px;
+  background: #a92520;
+  color: #fff4e9;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 8px 28px rgba(130, 10, 10, 0.25);
+  transition: background 180ms ease, transform 180ms ease;
+}
+
+.book-button:hover {
+  background: #c1322a;
+  transform: translateY(-1px);
+}
+
+.landing-note {
+  color: #b9a29a;
+  font-size: 11px;
+  letter-spacing: 0.6px;
+}
+
+/* ===== DIMMED POSTER + BOOKING OVERLAY ===== */
+
+.registration-overlay {
+  min-height: 100svh;
+  padding: 28px 20px 48px;
+  background: rgba(12, 3, 4, 0.66);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: cinemaFadeIn 220ms ease both;
+}
+
+.overlay-close {
+  display: block;
+  width: fit-content;
+  margin: 0 auto 20px;
+  padding: 9px 0;
+  border: 0;
+  background: transparent;
+  color: #d7b9ad;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.overlay-close span {
+  margin-right: 8px;
+}
+
+.content {
+  width: min(560px, 100%);
+  margin: 0 auto;
+  padding: 8px 0 24px;
+}
+
+.booking-heading {
+  margin-bottom: 26px;
+  text-align: center;
+}
+
+.booking-eyebrow {
+  margin: 0 0 12px;
+  color: #e0a49a;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2.4px;
+}
+
+.booking-heading h1 {
+  margin: 0;
+  color: #fff0e4;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(36px, 6vw, 54px);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -1.2px;
+}
+
+.booking-heading > p:last-child {
+  margin: 12px 0 0;
+  color: #c7b1aa;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Event information */
+
+.event-card {
+  margin: 0 0 28px;
+  padding: 22px 24px;
+  background: rgba(58, 19, 19, 0.66);
+  border: 1px solid rgba(238, 198, 181, 0.18);
+  border-radius: 8px;
+}
+
+.event-item strong {
+  color: #fff0e4;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.event-item .label,
+.event-item small {
+  color: #c5a79c;
+}
+
+.event-divider {
+  background: rgba(238, 198, 181, 0.22);
+}
+
+/* Registration form */
+
+.registration {
+  max-width: none;
+  margin-top: 0;
+  padding: 26px;
+  background: rgba(32, 12, 13, 0.84);
+  border: 1px solid rgba(238, 198, 181, 0.2);
+  border-radius: 10px;
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.22);
+}
+
+.registration h2 {
+  margin-bottom: 22px;
+  color: #fff0e4;
+  font-size: 32px;
+}
+
+.input-card {
+  min-height: 82px;
+  background: rgba(255, 245, 237, 0.045);
+  border-color: rgba(238, 198, 181, 0.22);
+  border-radius: 6px;
+}
+
+.input-card:focus-within {
+  background: rgba(255, 245, 237, 0.08);
+  border-color: #c96b5d;
+  box-shadow: none;
+}
+
+.input-label,
+.quantity-description,
+.total-row span {
+  color: #c4a79c;
+}
+
+.input-content input,
+.quantity-control > span,
+.total-row strong {
+  color: #fff0e4;
+}
+
+.input-content input::placeholder {
+  color: #a38a83;
+}
+
+.quantity-control button {
+  color: #fff0e4;
+  border-color: rgba(238, 198, 181, 0.3);
+}
+
+.quantity-control button:hover:not(:disabled) {
+  background: rgba(255, 245, 237, 0.1);
+  border-color: #c96b5d;
+}
+
+.total-row {
+  padding: 18px 2px 8px;
+}
+
+.total-row strong {
+  font-size: 30px;
+}
+
+.continue-button {
+  width: 100%;
+  border-radius: 5px;
+  background: #a92520;
+  color: #fff4e9;
+}
+
+.continue-button:hover:not(:disabled) {
+  background: #c1322a;
+}
+
+.secure-text {
+  color: #b7a19a;
+}
+
+.message {
+  background: rgba(255, 236, 223, 0.09);
+  color: #f4d9ce;
+  border: 1px solid rgba(238, 198, 181, 0.14);
+}
+
+.payment-section {
+  max-width: none;
+  margin-top: 0;
+  padding: 26px;
+  background: rgba(32, 12, 13, 0.84);
+  border: 1px solid rgba(238, 198, 181, 0.2);
+  border-radius: 10px;
+}
+
+.payment-eyebrow,
+.upi-label {
+  color: #e0a49a;
+}
+
+.payment-section h2 {
+  color: #fff0e4;
+  font-size: clamp(34px, 5vw, 44px);
+}
+
+.payment-description {
+  color: #c7b1aa;
+}
+
+.payment-card {
+  padding: 22px;
+  background: rgba(255, 245, 237, 0.045);
+  border-color: rgba(238, 198, 181, 0.2);
+  border-radius: 6px;
+}
+
+.payment-summary span {
+  color: #c4a79c;
+}
+
+.payment-summary strong {
+  color: #fff0e4;
+}
+
+.payment-divider {
+  background: rgba(238, 198, 181, 0.2);
+}
+
+.ticket-reference {
+  color: #b7a19a;
+}
+
+@keyframes cinemaFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== MOBILE ===== */
+
+@media (max-width: 600px) {
+  .poster-landing {
+    padding: 0 14px 24px;
+  }
+
+  .poster-image {
+    width: 100%;
+    height: auto;
+    max-height: 72svh;
+    object-fit: contain;
+  }
+
+  .landing-footer {
+    padding-top: 18px;
+  }
+
+  .registration-overlay {
+    padding: 14px 14px 32px;
+  }
+
+  .content {
+    padding-top: 0;
+  }
+
+  .event-card {
+    padding: 18px 16px;
+    border-radius: 7px;
+  }
+
+  .event-divider {
+    margin: 0 18px;
+  }
+
+  .registration,
+  .payment-section {
+    padding: 20px 16px;
+  }
+
+  .registration h2 {
+    font-size: 29px;
+  }
+
+  .payment-card {
+    padding: 18px 14px;
+  }
+
+  .payment-summary {
+    gap: 16px 10px;
+  }
+
+  .payment-summary strong {
+    font-size: 17px;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .registration-overlay {
+    animation: none;
+  }
+
+  .book-button {
+    transition: none;
+  }
+}
