@@ -1,24 +1,13 @@
-const express = require("express");
+﻿const express = require("express");
 const cors = require("cors");
 const QRCode = require("qrcode");
 const db = require("./database");
 const crypto = require("crypto");
-const UPI_ID = "niharikathilak-1@okicici";
+const UPI_ID = "alwintech12@okicici";
 const UPI_NAME = "Cinema Talkies";
 
 require("dotenv").config();
-const Razorpay = require("razorpay");
-
 const app = express();
-
-if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-  throw new Error("Razorpay environment variables are missing.");
-}
-
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
 
 app.use(cors());
 app.use(express.json());
@@ -134,215 +123,255 @@ app.post("/register", (req, res) => {
 
 
 /**
- * CREATE RAZORPAY ORDER
- * Amount is taken from our database, not trusted from the frontend.
+ * Volunteer authentication and manual UPI payment review.
+ * Payment must be checked in the actual receiving UPI account.
  */
-app.post("/tickets/:ticketId/create-order", async (req, res) => {
-  try {
-    const ticket = db
-      .prepare("SELECT * FROM tickets WHERE ticket_id = ?")
-      .get(req.params.ticketId);
+function createStaffToken() {
+  const payload = Buffer.from(JSON.stringify({
+    exp: Math.floor(Date.now() / 1000) + 8 * 60 * 60,
+    staff: "Authorized TechFest volunteer"
+  })).toString("base64url");
 
-    if (!ticket) {
-      return res.status(404).json({
-        success: false,
-        message: "Ticket not found",
-      });
-    }
+  const signature = crypto
+    .createHmac("sha256", process.env.STAFF_TOKEN_SECRET)
+    .update(payload)
+    .digest("base64url");
 
-    if (ticket.payment_status === "PAID") {
-      return res.status(409).json({
-        success: false,
-        message: "This ticket is already paid.",
-      });
-    }
+  return `${payload}.${signature}`;
+}
 
-    // Reuse the existing order if one has already been created.
-    if (ticket.razorpay_order_id) {
-      return res.json({
-        success: true,
-        keyId: process.env.RAZORPAY_KEY_ID,
-        orderId: ticket.razorpay_order_id,
-        ticketId: ticket.ticket_id,
-        amount: ticket.amount * 100,
-        currency: "INR",
-      });
-    }
+function requireStaff(req, res, next) {
+  const secret = process.env.STAFF_TOKEN_SECRET;
+  const header = req.get("authorization") || "";
+  const match = header.match(/^Bearer (.+)$/);
 
-    const order = await razorpay.orders.create({
-      amount: ticket.amount * 100,
-      currency: "INR",
-      receipt: ticket.ticket_id,
-      notes: {
-        ticketId: ticket.ticket_id,
-        eventDate: ticket.event_date,
-      },
-    });
-
-    db.prepare(`
-      UPDATE tickets
-      SET razorpay_order_id = ?
-      WHERE ticket_id = ?
-        AND payment_status != 'PAID'
-    `).run(order.id, ticket.ticket_id);
-
-    return res.status(201).json({
-      success: true,
-      keyId: process.env.RAZORPAY_KEY_ID,
-      orderId: order.id,
-      ticketId: ticket.ticket_id,
-      amount: order.amount,
-      currency: order.currency,
-    });
-  } catch (error) {
-    console.error("Razorpay order creation failed:", error.message);
-
-    return res.status(500).json({
+  if (!secret || !match) {
+    return res.status(401).json({
       success: false,
-      message: "Could not create payment order.",
+      message: "Volunteer login required."
     });
   }
+
+  const parts = match[1].split(".");
+  if (parts.length !== 2) {
+    return res.status(401).json({ success: false, message: "Invalid session." });
+  }
+
+  const [payload, signature] = parts;
+  const expected = crypto
+    .createHmac("sha256", secret)
+    .update(payload)
+    .digest("base64url");
+
+  const actualBuffer = Buffer.from(signature);
+  const expectedBuffer = Buffer.from(expected);
+
+  if (
+    actualBuffer.length !== expectedBuffer.length ||
+    !crypto.timingSafeEqual(actualBuffer, expectedBuffer)
+  ) {
+    return res.status(401).json({ success: false, message: "Invalid session." });
+  }
+
+  try {
+    const session = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+
+    if (!session.exp || session.exp <= Math.floor(Date.now() / 1000)) {
+      return res.status(401).json({ success: false, message: "Session expired. Log in again." });
+    }
+
+    req.staff = session;
+    next();
+  } catch {
+    return res.status(401).json({ success: false, message: "Invalid session." });
+  }
+}
+
+// Volunteer login. Password and signing secret remain on the server.
+app.post("/staff/login", (req, res) => {
+  const expected = process.env.STAFF_LOGIN_PASSWORD;
+  const provided = typeof req.body?.password === "string" ? req.body.password : "";
+
+  if (!expected || !process.env.STAFF_TOKEN_SECRET) {
+    return res.status(503).json({
+      success: false,
+      message: "Volunteer login is not configured."
+    });
+  }
+
+  const a = Buffer.from(expected);
+  const b = Buffer.from(provided);
+
+  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+    return res.status(401).json({ success: false, message: "Incorrect password." });
+  }
+
+  return res.json({
+    success: true,
+    token: createStaffToken(),
+    expiresIn: 28800
+  });
 });
 
+// Customer submits the UPI transaction reference.
+// Submission alone never grants access to the ticket QR.
+app.post("/tickets/:ticketId/submit-utr", (req, res) => {
+  const reference = typeof req.body?.transactionReference === "string"
+    ? req.body.transactionReference.trim()
+    : "";
 
-/**
- * VERIFY RAZORPAY PAYMENT
- * A ticket becomes PAID only after server-side verification.
- */
-app.post("/tickets/:ticketId/verify-payment", async (req, res) => {
-  console.log("Registering Razorpay verification route");
+  if (reference.length < 6 || reference.length > 100 || !/^[a-zA-Z0-9-]+$/.test(reference)) {
+    return res.status(400).json({
+      success: false,
+      message: "Enter a valid transaction reference (6–100 letters, numbers or hyphens)."
+    });
+  }
+
+  const ticket = db.prepare(
+    "SELECT ticket_id, payment_status FROM tickets WHERE ticket_id = ?"
+  ).get(req.params.ticketId);
+
+  if (!ticket) {
+    return res.status(404).json({ success: false, message: "Booking not found." });
+  }
+
+  if (ticket.payment_status === "PAID") {
+    return res.status(409).json({ success: false, message: "Payment is already confirmed." });
+  }
+
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
-      req.body;
-
-    if (
-      !razorpay_order_id ||
-      !razorpay_payment_id ||
-      !razorpay_signature
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Payment verification details are missing.",
-      });
-    }
-
-    const ticket = db
-      .prepare("SELECT * FROM tickets WHERE ticket_id = ?")
-      .get(req.params.ticketId);
-
-    if (!ticket) {
-      return res.status(404).json({
-        success: false,
-        message: "Ticket not found.",
-      });
-    }
-
-    // Make repeated verification requests safe.
-    if (ticket.payment_status === "PAID") {
-      return res.json({
-        success: true,
-        message: "Payment already verified.",
-        ticketId: ticket.ticket_id,
-      });
-    }
-
-    // The order must belong to this ticket.
-    if (
-      !ticket.razorpay_order_id ||
-      ticket.razorpay_order_id !== razorpay_order_id
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Payment order does not match this ticket.",
-      });
-    }
-
-    // Verify Razorpay's checkout signature using the server secret.
-    const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-      .digest("hex");
-
-    const expectedBuffer = Buffer.from(expectedSignature, "hex");
-    const receivedBuffer = Buffer.from(razorpay_signature, "hex");
-
-    if (
-      expectedBuffer.length !== receivedBuffer.length ||
-      !crypto.timingSafeEqual(expectedBuffer, receivedBuffer)
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid payment signature.",
-      });
-    }
-
-    // Independently check the payment with Razorpay.
-    const payment = await razorpay.payments.fetch(razorpay_payment_id);
-
-    if (
-      payment.order_id !== ticket.razorpay_order_id ||
-      payment.amount !== ticket.amount * 100 ||
-      payment.currency !== "INR"
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Payment details do not match the ticket.",
-      });
-    }
-
-    // Do not issue a ticket for an unpaid or merely authorized payment.
-    if (payment.status !== "captured") {
-      return res.status(409).json({
-        success: false,
-        message:
-          "Payment is not captured yet. Please wait and try again.",
-      });
-    }
-
-    // Atomic update: never overwrite a ticket that has already been paid.
     const result = db.prepare(`
       UPDATE tickets
-      SET payment_status = 'PAID'
+      SET payment_reference = ?,
+          payment_status = 'PENDING',
+          payment_rejection_reason = NULL,
+          payment_submitted_at = ?,
+          payment_reviewed_at = NULL,
+          payment_reviewed_by = NULL
       WHERE ticket_id = ?
-        AND razorpay_order_id = ?
-        AND payment_status = 'PENDING'
-    `).run(ticket.ticket_id, razorpay_order_id);
+        AND payment_status IN ('PENDING', 'REJECTED')
+    `).run(reference, new Date().toISOString(), ticket.ticket_id);
 
     if (result.changes !== 1) {
-      const latestTicket = db
-        .prepare("SELECT payment_status FROM tickets WHERE ticket_id = ?")
-        .get(ticket.ticket_id);
-
-      if (latestTicket?.payment_status === "PAID") {
-        return res.json({
-          success: true,
-          message: "Payment already verified.",
-          ticketId: ticket.ticket_id,
-        });
-      }
-
-      return res.status(409).json({
-        success: false,
-        message: "Ticket status changed. Please check the booking.",
-      });
+      return res.status(409).json({ success: false, message: "Booking status changed. Check its payment status." });
     }
 
     return res.json({
       success: true,
-      message: "Payment verified successfully.",
-      ticketId: ticket.ticket_id,
+      message: "Transaction reference submitted for verification.",
+      paymentStatus: "PENDING"
     });
   } catch (error) {
-    console.error(
-      "Payment verification failed:",
-      error.error?.description || error.message
-    );
+    if (error.code === "SQLITE_CONSTRAINT_UNIQUE") {
+      return res.status(409).json({
+        success: false,
+        message: "This transaction reference has already been submitted."
+      });
+    }
 
-    return res.status(500).json({
+    console.error("UTR submission failed:", error);
+    return res.status(500).json({ success: false, message: "Could not submit the reference." });
+  }
+});
+
+// Customer can check their own booking status using its ticket ID.
+app.get("/tickets/:ticketId/payment-status", (req, res) => {
+  const ticket = db.prepare(`
+    SELECT ticket_id, payment_status, payment_rejection_reason, payment_submitted_at
+    FROM tickets WHERE ticket_id = ?
+  `).get(req.params.ticketId);
+
+  if (!ticket) {
+    return res.status(404).json({ success: false, message: "Booking not found." });
+  }
+
+  return res.json({
+    success: true,
+    ticketId: ticket.ticket_id,
+    paymentStatus: ticket.payment_status,
+    rejectionReason: ticket.payment_rejection_reason || null,
+    submittedAt: ticket.payment_submitted_at || null
+  });
+});
+
+// Only logged-in volunteers can view pending payment submissions.
+app.get("/staff/payments", requireStaff, (req, res) => {
+  const payments = db.prepare(`
+    SELECT ticket_id, name, phone, quantity, amount, event_date,
+           payment_reference, payment_submitted_at
+    FROM tickets
+    WHERE payment_status = 'PENDING'
+      AND payment_reference IS NOT NULL
+    ORDER BY payment_submitted_at ASC
+  `).all();
+
+  return res.json({ success: true, payments });
+});
+
+// Approve only after matching the actual incoming payment in the UPI account.
+app.post("/staff/payments/:ticketId/approve", requireStaff, (req, res) => {
+  const result = db.prepare(`
+    UPDATE tickets
+    SET payment_status = 'PAID',
+        payment_reviewed_at = ?,
+        payment_reviewed_by = ?
+    WHERE ticket_id = ?
+      AND payment_status = 'PENDING'
+      AND payment_reference IS NOT NULL
+  `).run(
+    new Date().toISOString(),
+    req.staff.staff,
+    req.params.ticketId
+  );
+
+  if (result.changes !== 1) {
+    return res.status(409).json({
       success: false,
-      message: "Could not verify payment. Please try again.",
+      message: "Booking is missing, has no UTR, or has already been reviewed."
     });
   }
+
+  return res.json({
+    success: true,
+    message: "Payment approved. Ticket QR access is now enabled."
+  });
+});
+
+// Reject a submission with a reason. Customer can submit a corrected UTR later.
+app.post("/staff/payments/:ticketId/reject", requireStaff, (req, res) => {
+  const reason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
+
+  if (!reason || reason.length > 300) {
+    return res.status(400).json({
+      success: false,
+      message: "Provide a rejection reason (maximum 300 characters)."
+    });
+  }
+
+  const result = db.prepare(`
+    UPDATE tickets
+    SET payment_status = 'REJECTED',
+        payment_rejection_reason = ?,
+        payment_reviewed_at = ?,
+        payment_reviewed_by = ?
+    WHERE ticket_id = ?
+      AND payment_status = 'PENDING'
+      AND payment_reference IS NOT NULL
+  `).run(
+    reason,
+    new Date().toISOString(),
+    req.staff.staff,
+    req.params.ticketId
+  );
+
+  if (result.changes !== 1) {
+    return res.status(409).json({
+      success: false,
+      message: "Booking is missing, has no UTR, or has already been reviewed."
+    });
+  }
+
+  return res.json({ success: true, message: "Payment submission rejected." });
 });
 
 // Public ticket listing is disabled to protect customer information.
@@ -512,6 +541,8 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Cinema Talkies server running on http://localhost:${PORT}`);
 });
+
+
 
 
 

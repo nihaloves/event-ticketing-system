@@ -1,4 +1,4 @@
-const Database = require("better-sqlite3");
+﻿const Database = require("better-sqlite3");
 const path = require("path");
 
 const db = new Database(path.join(__dirname, "techfest.db"));
@@ -18,81 +18,50 @@ db.exec(`
   )
 `);
 
-/*
-  Add new columns to an existing database.
-
-  These commands are only needed because the database
-  was originally created before quantity, amount and
-  event_date existed.
-*/
-
 const columns = db
   .prepare("PRAGMA table_info(tickets)")
   .all()
   .map((column) => column.name);
 
-if (!columns.includes("quantity")) {
-  db.exec(`
-    ALTER TABLE tickets
-    ADD COLUMN quantity INTEGER NOT NULL DEFAULT 1
-  `);
+const migrations = {
+  quantity: "ALTER TABLE tickets ADD COLUMN quantity INTEGER NOT NULL DEFAULT 1",
+  amount: "ALTER TABLE tickets ADD COLUMN amount INTEGER NOT NULL DEFAULT 20",
+  event_date: "ALTER TABLE tickets ADD COLUMN event_date TEXT NOT NULL DEFAULT '2026-10-15'",
+  razorpay_order_id: "ALTER TABLE tickets ADD COLUMN razorpay_order_id TEXT",
+  payment_reference: "ALTER TABLE tickets ADD COLUMN payment_reference TEXT",
+  payment_rejection_reason: "ALTER TABLE tickets ADD COLUMN payment_rejection_reason TEXT",
+  payment_submitted_at: "ALTER TABLE tickets ADD COLUMN payment_submitted_at TEXT",
+  payment_reviewed_at: "ALTER TABLE tickets ADD COLUMN payment_reviewed_at TEXT",
+  payment_reviewed_by: "ALTER TABLE tickets ADD COLUMN payment_reviewed_by TEXT"
+};
+
+for (const [column, sql] of Object.entries(migrations)) {
+  if (!columns.includes(column)) {
+    db.exec(sql);
+  }
 }
 
-if (!columns.includes("amount")) {
-  db.exec(`
-    ALTER TABLE tickets
-    ADD COLUMN amount INTEGER NOT NULL DEFAULT 20
-  `);
-}
-
-if (!columns.includes("event_date")) {
-  db.exec(`
-    ALTER TABLE tickets
-    ADD COLUMN event_date TEXT NOT NULL DEFAULT '2026-10-16'
-  `);
-}
-
-if (!columns.includes("razorpay_order_id")) {
-  db.exec(`
-    ALTER TABLE tickets
-    ADD COLUMN razorpay_order_id TEXT
-  `);
-}
-
-
-/*
-  Create a demo ticket only in development.
-  Production must never create a fake paid ticket.
-*/
+db.exec(`
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_payment_reference
+  ON tickets(lower(trim(payment_reference)))
+  WHERE payment_reference IS NOT NULL
+`);
 
 if (process.env.NODE_ENV !== "production") {
   const existingTicket = db
-    .prepare("SELECT * FROM tickets WHERE ticket_id = ?")
+    .prepare("SELECT ticket_id FROM tickets WHERE ticket_id = ?")
     .get("CT-DEMO001");
 
   if (!existingTicket) {
     db.prepare(`
       INSERT INTO tickets
-      (
-        ticket_id,
-        name,
-        phone,
-        quantity,
-        amount,
-        event_date,
-        payment_status
-      )
+      (ticket_id, name, phone, quantity, amount, event_date, payment_status)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `).run(
-      "CT-DEMO001",
-      "Demo User",
-      "9999999999",
-      1,
-      20,
-      "2026-10-15",
-      "PAID"
+      "CT-DEMO001", "Demo User", "9999999999",
+      1, 20, "2026-10-15", "PAID"
     );
   }
 }
-module.exports = db;
 
+module.exports = db;
