@@ -1,12 +1,14 @@
 ﻿import { useState } from "react";
 import API_BASE_URL from "./api.js";
 import { Routes, Route, useNavigate } from "react-router-dom";
+import { QRCodeSVG } from "qrcode.react";
 import "./App.css";
 import Ticket from "./Ticket.jsx";
 
+
 const TICKET_PRICE = 20;
 const UPI_ID = "alwintech12@okicici";
-const UPI_NAME = "Cinema Talkies";
+const UPI_NAME = "ALWIN SIMON";
 
 function getEventDate() {
   const now = new Date();
@@ -133,9 +135,11 @@ function RegistrationPage() {
     }
   }
 
-  const upiLink = paymentData
-    ? `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(UPI_NAME)}&am=${paymentData.amount}&cu=INR&tn=${encodeURIComponent(`Cinema Talkies ${paymentData.ticketId}`)}`
-    : "#";
+  
+const upiLink = paymentData
+  ? `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(UPI_NAME)}&tr=${encodeURIComponent(paymentData.ticketId)}&tn=${encodeURIComponent(`Cinema Talkies ${paymentData.ticketId}`)}&am=${paymentData.amount}&cu=INR`
+  : "#";
+
 
   return (
     <div className="page">
@@ -216,9 +220,34 @@ function RegistrationPage() {
                     Pay the exact amount, then enter the UTR or transaction reference shown in your UPI app.
                   </p>
 
-                  <a className="continue-button" href={upiLink}>
-                    Open UPI app <span className="arrow">→</span>
-                  </a>
+                  
+<div className="payment-qr-section">
+  <p className="upi-label">SCAN TO PAY</p>
+
+  <div className="payment-qr-frame">
+    <QRCodeSVG
+      value={upiLink}
+      size={240}
+      level="M"
+      marginSize={2}
+      title="Cinema Talkies UPI payment QR"
+    />
+  </div>
+
+  <p className="payment-description">
+    Scan with Google Pay or another UPI app.
+    Verify the recipient and amount before paying.
+  </p>
+
+  <button
+    type="button"
+    className="secondary-button"
+    onClick={() => navigator.clipboard.writeText(upiLink)}
+  >
+    Copy payment link
+  </button>
+</div>
+
 
                   <p className="ticket-reference">Booking reference: {paymentData.ticketId}</p>
 

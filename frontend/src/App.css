@@ -1155,3 +1155,29 @@ body {
     transition: none;
   }
 }
+
+
+.payment-qr-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 24px 12px;
+  text-align: center;
+}
+
+.payment-qr-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+}
+
+.payment-qr-frame svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
