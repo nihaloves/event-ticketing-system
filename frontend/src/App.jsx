@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+﻿import { useEffect, useState } from "react";
 import API_BASE_URL from "./api.js";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
@@ -24,6 +24,7 @@ function formatEventDate(date) {
 }
 
 function RegistrationPage() {
+  const eventDate = getEventDate();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -31,11 +32,11 @@ function RegistrationPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [paymentData, setPaymentData] = useState(null);
-  const [submitted, setSubmitted] = useState(false);
+  const [utr, setUtr] = useState("");
   const [paymentStatus, setPaymentStatus] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
-  const [showRegistration, setShowRegistration] = useState(false);
-  const eventDate = getEventDate();
+  const [submitted, setSubmitted] = useState(false);
+const [showRegistration, setShowRegistration] = useState(false);
   const totalAmount = TICKET_PRICE * quantity;
 
   async function handleRegister(e) {
@@ -64,6 +65,49 @@ function RegistrationPage() {
         amount: ticket.amount,
       });
       setPaymentStatus("PENDING");
+    } catch (error) {
+      setMessage(error.message || "Could not connect to the server.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+
+  async function submitPayment() {
+    if (!paymentData?.ticketId || loading || submitted) return;
+
+    const reference = utr.trim();
+
+    if (!/^[A-Za-z0-9/_-]{6,40}$/.test(reference)) {
+      setMessage("Enter a valid UPI transaction ID or UTR (6-40 letters or numbers).");
+      return;
+    }
+
+    setLoading(true);
+    setMessage("");
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/tickets/${encodeURIComponent(paymentData.ticketId)}/submit-payment`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ utr: reference }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Could not submit payment for verification.");
+      }
+
+      setSubmitted(true);
+      setPaymentStatus("PENDING");
+      setRejectionReason("");
+      setMessage(
+        data.message || "Transaction reference submitted for volunteer verification."
+      );
     } catch (error) {
       setMessage(error.message || "Could not connect to the server.");
     } finally {
@@ -106,7 +150,54 @@ function RegistrationPage() {
     }
   }
 
-  
+  useEffect(() => {
+    if (!submitted || !paymentData?.ticketId) return;
+
+    let active = true;
+
+    const checkAutomatically = async () => {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/tickets/${encodeURIComponent(paymentData.ticketId)}/payment-status`
+        );
+        const data = await response.json();
+
+        if (!response.ok || !active) return;
+
+        const status = String(
+          data.paymentStatus || data.status || "PENDING"
+        ).toUpperCase();
+
+        setPaymentStatus(status);
+
+        if (status === "PAID") {
+          active = false;
+          navigate(`/ticket/${encodeURIComponent(paymentData.ticketId)}`);
+        } else if (status === "REJECTED") {
+          setRejectionReason(
+            data.rejectionReason || data.paymentRejectionReason || ""
+          );
+          setSubmitted(false);
+          setMessage(
+            data.rejectionReason ||
+              data.paymentRejectionReason ||
+              "Payment was rejected. Check the reference and submit it again."
+          );
+        }
+      } catch {
+        // Keep waiting; the next check will retry.
+      }
+    };
+
+    const intervalId = setInterval(checkAutomatically, 4000);
+
+    return () => {
+      active = false;
+      clearInterval(intervalId);
+    };
+  }, [submitted, paymentData?.ticketId, navigate]);
+
+
 const upiLink = paymentData
   ? `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(UPI_NAME)}&tr=${encodeURIComponent(paymentData.ticketId)}&tn=${encodeURIComponent(`Cinema Talkies ${paymentData.ticketId}`)}&am=${paymentData.amount}&cu=INR`
   : "#";
@@ -126,7 +217,7 @@ const upiLink = paymentData
             <p>VYVIDH '26 · CINEMA TALKIES</p>
             <button className="book-button" type="button"
               onClick={() => setShowRegistration(true)}>
-              Book Your Tickets <span>· ₹20</span>
+              Book Your Tickets <span>{ "\u00B7" } { "\u20B9" }20</span>
             </button>
             <span className="landing-note">October 15 &amp; 17, 2026 · South Block 003</span>
           </div>
@@ -136,7 +227,7 @@ const upiLink = paymentData
           {!paymentData && (
             <button className="overlay-close" type="button"
               onClick={() => { setShowRegistration(false); setMessage(""); }}>
-              <span aria-hidden="true">←</span>
+              <span aria-hidden="true">×</span>
             </button>
           )}
 
@@ -161,7 +252,7 @@ const upiLink = paymentData
               <div className="event-item">
                 <div>
                   <span className="label">TICKET</span>
-                  <strong>₹{TICKET_PRICE}</strong>
+                  <strong>{"\u20B9"}{TICKET_PRICE}</strong>
                   <small>Per person</small>
                 </div>
               </div>
@@ -176,7 +267,7 @@ const upiLink = paymentData
                   <div className="payment-summary">
                     <div><span>NAME</span><strong>{paymentData.name}</strong></div>
                     <div><span>TICKETS</span><strong>{paymentData.quantity}</strong></div>
-                    <div><span>TOTAL</span><strong>₹{paymentData.amount}</strong></div>
+                    <div><span>TOTAL</span><strong>{"\u20B9"}{paymentData.amount}</strong></div>
                   </div>
 
                   <div className="payment-divider" />
@@ -191,7 +282,7 @@ const upiLink = paymentData
                     Pay the exact amount using UPI. Keep your payment confirmation for verification.
                   </p>
 
-                  
+
 <div className="payment-qr-section">
   <p className="upi-label">SCAN TO PAY</p>
 
@@ -222,12 +313,39 @@ const upiLink = paymentData
 
                   <p className="ticket-reference">Booking reference: {paymentData.ticketId}</p>
 
-                  
+<div className="utr-entry">
+  <label htmlFor="utr-reference">UPI TRANSACTION ID / UTR</label>
+  <input
+    id="utr-reference"
+    type="text"
+    value={utr}
+    onChange={(e) => setUtr(e.target.value)}
+    placeholder="Enter your UPI transaction ID / UTR"
+    autoComplete="off"
+    maxLength={40}
+    required
+  />
+  <p className="input-hint">
+    Enter the transaction reference shown in your UPI app.
+  </p>
+</div>
 
-                  <button className="secondary-button" type="button"
-                    onClick={checkStatus} disabled={loading}>
-                    {loading ? "Checking..." : "Check payment status"}
-                  </button>
+
+
+                  
+<button
+  className="payment-primary-button"
+  type="button"
+  onClick={submitted ? checkStatus : submitPayment}
+  disabled={loading}
+>
+  {loading
+    ? "Please wait..."
+    : submitted
+      ? "Check payment status"
+      : "I've paid"}
+</button>
+
 
                   <p className="secure-text">
                     Status: {paymentStatus || "PENDING"}
@@ -269,11 +387,11 @@ const upiLink = paymentData
                   <div className="input-card quantity-card">
                     <div className="input-content">
                       <span className="input-label">NUMBER OF TICKETS</span>
-                      <span className="quantity-description">₹{TICKET_PRICE} per ticket</span>
+                      <span className="quantity-description">{"\u20B9"}{TICKET_PRICE} per ticket</span>
                     </div>
                     <div className="quantity-control">
                       <button type="button" onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                        disabled={quantity === 1} aria-label="Decrease ticket count">−</button>
+                        disabled={quantity === 1} aria-label="Decrease ticket count">-</button>
                       <span>{quantity}</span>
                       <button type="button" onClick={() => setQuantity(q => Math.min(10, q + 1))}
                         disabled={quantity === 10} aria-label="Increase ticket count">+</button>
@@ -281,7 +399,7 @@ const upiLink = paymentData
                   </div>
 
                   <div className="total-row">
-                    <span>TOTAL</span><strong>₹{totalAmount}</strong>
+                    <span>TOTAL</span><strong>{"\u20B9"}{totalAmount}</strong>
                   </div>
                   <button className="continue-button" type="submit" disabled={loading}>
                     <span>{loading ? "Processing..." : "Continue to payment"}</span>
@@ -308,6 +426,9 @@ function App() {
 }
 
 export default App;
+
+
+
 
 
 

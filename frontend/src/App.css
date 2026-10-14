@@ -1181,3 +1181,282 @@ body {
   max-width: 100%;
   height: auto;
 }
+
+.utr-entry {
+  margin: 20px 0;
+  text-align: left;
+}
+
+.utr-entry label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.utr-entry input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #d8d2cc;
+  border-radius: 8px;
+  background: #fff;
+  color: #242424;
+  font: inherit;
+}
+
+.utr-entry input::placeholder {
+  color: #777;
+  opacity: 1;
+}
+
+.utr-entry input:focus {
+  outline: 2px solid #0d5c63;
+  outline-offset: 2px;
+}
+
+.utr-entry .input-hint {
+  margin: 8px 0 0;
+  color: #666;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* ===== CINEMA TALKIES PAYMENT PAGE REFINEMENT ===== */
+
+.payment-section {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 28px;
+  background: rgba(35, 12, 14, 0.94);
+  border: 1px solid rgba(238, 198, 181, 0.22);
+  border-radius: 12px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+}
+
+.payment-section h2 {
+  margin-bottom: 24px;
+}
+
+.payment-card {
+  padding: 24px;
+  background: rgba(255, 245, 237, 0.035);
+  border: 1px solid rgba(238, 198, 181, 0.16);
+  border-radius: 9px;
+}
+
+/* Booking summary */
+
+.payment-summary {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.7fr)
+    minmax(0, 1fr);
+  gap: 12px;
+}
+
+.payment-summary > div {
+  min-width: 0;
+}
+
+.payment-summary strong {
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* UPI ID and secondary actions */
+
+.payment-card > p > strong {
+  color: #fff0e4;
+  overflow-wrap: anywhere;
+}
+
+.secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 10px 16px;
+  border: 1px solid rgba(238, 198, 181, 0.32);
+  border-radius: 6px;
+  background: transparent;
+  color: #f8dfd3;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.secondary-button:hover:not(:disabled) {
+  background: rgba(255, 245, 237, 0.08);
+  border-color: #d58b7d;
+}
+
+.secondary-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* QR payment area */
+
+.payment-qr-section {
+  gap: 12px;
+  margin-top: 22px;
+  padding: 22px 12px;
+  border-top: 1px solid rgba(238, 198, 181, 0.15);
+  border-bottom: 1px solid rgba(238, 198, 181, 0.15);
+}
+
+.payment-qr-frame {
+  padding: 12px;
+  background: #fff;
+  border: none;
+  border-radius: 8px;
+}
+
+.payment-qr-section .payment-description {
+  margin: 4px 0;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+/* Booking reference */
+
+.ticket-reference {
+  margin: 22px 0;
+  padding: 13px 14px;
+  background: rgba(255, 245, 237, 0.045);
+  border: 1px solid rgba(238, 198, 181, 0.15);
+  border-radius: 6px;
+  color: #e0bdb1;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+/* UTR input */
+
+.utr-entry {
+  margin: 22px 0 16px;
+}
+
+.utr-entry label {
+  margin-bottom: 10px;
+  color: #e0b5a8;
+  font-size: 10px;
+  letter-spacing: 1.4px;
+  line-height: 1.6;
+}
+
+.utr-entry input {
+  width: 100%;
+  min-height: 48px;
+  padding: 13px 14px;
+  border: 1px solid rgba(238, 198, 181, 0.25);
+  border-radius: 6px;
+  background: #291517;
+  color: #fff0e4;
+  font-size: 14px;
+  color-scheme: dark;
+}
+
+.utr-entry input::placeholder {
+  color: #b49a92;
+  opacity: 1;
+}
+
+.utr-entry input:focus {
+  outline: none;
+  border-color: #d58b7d;
+  box-shadow: 0 0 0 3px rgba(213, 139, 125, 0.12);
+}
+
+.utr-entry .input-hint {
+  margin-top: 9px;
+  color: #bda49c;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* Main payment action */
+
+.payment-primary-button {
+  display: flex;
+  width: 100%;
+  min-height: 50px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  padding: 14px 18px;
+  border: 1px solid #bd443a;
+  border-radius: 6px;
+  background: #a92520;
+  color: #fff6ee;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+.payment-primary-button:hover:not(:disabled) {
+  background: #c1322a;
+}
+
+.payment-primary-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Status and feedback */
+
+.payment-card > .secure-text {
+  margin-top: 16px;
+  padding: 10px 12px;
+  border: 1px solid rgba(238, 198, 181, 0.13);
+  border-radius: 6px;
+  background: rgba(255, 245, 237, 0.035);
+  color: #d6b9af;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.payment-card > .message {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(238, 198, 181, 0.2);
+  border-radius: 6px;
+  background: rgba(255, 245, 237, 0.06);
+  color: #ffe3d6;
+}
+
+/* Small screens */
+
+@media (max-width: 600px) {
+  .payment-section {
+    padding: 20px 14px;
+  }
+
+  .payment-card {
+    padding: 18px 14px;
+  }
+
+  .payment-summary {
+    gap: 12px 8px;
+  }
+
+  .payment-summary strong {
+    font-size: 15px;
+  }
+
+  .payment-qr-frame svg {
+    width: min(240px, 100%);
+    height: auto;
+  }
+
+  .payment-primary-button {
+    min-height: 50px;
+  }
+}
