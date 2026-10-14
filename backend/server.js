@@ -288,63 +288,33 @@ app.post("/tickets/:ticketId/submit-payment", (req, res) => {
     paymentStatus: "PENDING"
   });
 });
-app.post("/tickets/:ticketId/submit-utr", (req, res) => {
-  const reference = typeof req.body?.transactionReference === "string"
-    ? req.body.transactionReference.trim()
-    : "";
+// Approve only after verifying the actual incoming UPI payment.
+app.post("/staff/payments/:ticketId/approve", requireStaff, (req, res) => {
+  const result = db.prepare(`
+    UPDATE tickets
+    SET payment_status = 'PAID',
+        payment_reviewed_at = ?,
+        payment_reviewed_by = ?
+    WHERE ticket_id = ?
+      AND payment_status = 'PENDING'
+      AND payment_submitted_at IS NOT NULL
+  `).run(
+    new Date().toISOString(),
+    req.staff.staff,
+    req.params.ticketId
+  );
 
-  if (reference.length < 6 || reference.length > 100 || !/^[a-zA-Z0-9-]+$/.test(reference)) {
-    return res.status(400).json({
+  if (result.changes !== 1) {
+    return res.status(409).json({
       success: false,
-      message: "Enter a valid transaction reference (6–100 letters, numbers or hyphens)."
+      message: "Booking is missing, has not been submitted for review, or has already been reviewed."
     });
   }
 
-  const ticket = db.prepare(
-    "SELECT ticket_id, payment_status FROM tickets WHERE ticket_id = ?"
-  ).get(req.params.ticketId);
-
-  if (!ticket) {
-    return res.status(404).json({ success: false, message: "Booking not found." });
-  }
-
-  if (ticket.payment_status === "PAID") {
-    return res.status(409).json({ success: false, message: "Payment is already confirmed." });
-  }
-
-  try {
-    const result = db.prepare(`
-      UPDATE tickets
-      SET payment_reference = ?,
-          payment_status = 'PENDING',
-          payment_rejection_reason = NULL,
-          payment_submitted_at = ?,
-          payment_reviewed_at = NULL,
-          payment_reviewed_by = NULL
-      WHERE ticket_id = ?
-        AND payment_status IN ('PENDING', 'REJECTED')
-    `).run(reference, new Date().toISOString(), ticket.ticket_id);
-
-    if (result.changes !== 1) {
-      return res.status(409).json({ success: false, message: "Booking status changed. Check its payment status." });
-    }
-
-    return res.json({
-      success: true,
-      message: "Transaction reference submitted for verification.",
-      paymentStatus: "PENDING"
-    });
-  } catch (error) {
-    if (error.code === "SQLITE_CONSTRAINT_UNIQUE") {
-      return res.status(409).json({
-        success: false,
-        message: "This transaction reference has already been submitted."
-      });
-    }
-
-    console.error("UTR submission failed:", error);
-    return res.status(500).json({ success: false, message: "Could not submit the reference." });
-  }
+  return res.json({
+    success: true,
+    message: "Payment verified and booking approved."
+  });
 });
 
 // Customer can check their own booking status using its ticket ID.
@@ -371,7 +341,7 @@ app.get("/tickets/:ticketId/payment-status", (req, res) => {
 app.get("/staff/payments", requireStaff, (req, res) => {
   const payments = db.prepare(`
     SELECT ticket_id, name, phone, quantity, amount, event_date,
-           payment_reference, payment_submitted_at
+          payment_submitted_at
     FROM tickets
     WHERE payment_status = 'PENDING'
       AND payment_submitted_at IS NOT NULL
@@ -400,7 +370,7 @@ app.post("/staff/payments/:ticketId/approve", requireStaff, (req, res) => {
   if (result.changes !== 1) {
     return res.status(409).json({
       success: false,
-      message: "Booking is missing, has no UTR, or has already been reviewed."
+     message: "Booking is missing, has not been submitted for review, or has already been reviewed."
     });
   }
 
@@ -410,7 +380,7 @@ app.post("/staff/payments/:ticketId/approve", requireStaff, (req, res) => {
   });
 });
 
-// Reject a submission with a reason. Customer can submit a corrected UTR later.
+// Reject a payment submission with a reason.
 app.post("/staff/payments/:ticketId/reject", requireStaff, (req, res) => {
   const reason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
 
@@ -439,8 +409,8 @@ app.post("/staff/payments/:ticketId/reject", requireStaff, (req, res) => {
 
   if (result.changes !== 1) {
     return res.status(409).json({
-      success: false,
-      message: "Booking is missing, has no UTR, or has already been reviewed."
+      success: false,message: "Booking is missing, has not been submitted for review, or has already been reviewed."
+      
     });
   }
 

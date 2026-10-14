@@ -31,7 +31,6 @@ function RegistrationPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [paymentData, setPaymentData] = useState(null);
-  const [utr, setUtr] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
@@ -72,47 +71,8 @@ function RegistrationPage() {
     }
   }
 
-  
-  async function submitUtr(e) {
-    e.preventDefault();
-    if (!paymentData?.ticketId) return;
 
-    if (!utr.trim()) {
-      setMessage("Enter your UPI transaction reference.");
-      return;
-    }
-
-    setLoading(true);
-    setMessage("");
-
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/tickets/${encodeURIComponent(paymentData.ticketId)}/submit-utr`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ transactionReference: utr.trim() }),
-        }
-      );
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || "Could not submit your transaction reference.");
-      }
-
-      setSubmitted(true);
-      setPaymentStatus("PENDING");
-      setRejectionReason("");
-      setMessage(
-        data.message || "Transaction reference submitted. A volunteer will verify your payment."
-      );
-    } catch (error) {
-      setMessage(error.message || "Could not connect to the server.");
-    } finally {
-      setLoading(false);
-    }
-  }
-  async function checkStatus() {
+     async function checkStatus() {
     if (!paymentData?.ticketId) return;
     setLoading(true);
     setMessage("");
@@ -185,7 +145,7 @@ const upiLink = paymentData
               <p className="payment-eyebrow">VYVIDH '26 · CINEMA TALKIES</p>
               <h1>{paymentData ? "Complete your payment." : "Save your seat."}</h1>
               <p>{paymentData
-                ? "Pay using UPI and submit your transaction reference."
+                ? "Pay using UPI, then let us know when you've completed the payment."
                 : "Your cinema experience starts here."}</p>
             </section>
 
@@ -228,7 +188,7 @@ const upiLink = paymentData
                   </button>
 
                   <p className="payment-description">
-                    Pay the exact amount, then enter the UTR or transaction reference shown in your UPI app.
+                    Pay the exact amount using UPI. Keep your payment confirmation for verification.
                   </p>
 
                   
@@ -246,9 +206,9 @@ const upiLink = paymentData
   </div>
 
   <p className="payment-description">
-    Scan with Google Pay or another UPI app.
-    Verify the recipient and amount before paying.
-  </p>
+  After paying, keep your booking reference for verification.
+  Your ticket will be available once a volunteer confirms payment.
+</p>
 
   <button
     type="button"
@@ -263,38 +223,6 @@ const upiLink = paymentData
                   <p className="ticket-reference">Booking reference: {paymentData.ticketId}</p>
 
                   
-<form onSubmit={submitUtr}>
-  <label className="input-card">
-    <span className="input-content">
-      <span className="input-label">UTR / TRANSACTION REFERENCE</span>
-      <input
-        type="text"
-        value={utr}
-        onChange={(e) => setUtr(e.target.value)}
-        placeholder="Enter your UPI transaction reference"
-        minLength={6}
-        maxLength={100}
-        pattern="[a-zA-Z0-9-]+"
-        required
-        disabled={loading || (submitted && paymentStatus !== "REJECTED")}
-        autoComplete="off"
-      />
-    </span>
-  </label>
-
-  <button
-    className="continue-button"
-    type="submit"
-    disabled={loading || (submitted && paymentStatus !== "REJECTED")}
-  >
-    {loading
-      ? "Please wait..."
-      : submitted && paymentStatus !== "REJECTED"
-        ? "Payment notification submitted"
-        : "I've paid"}
-  </button>
-</form>
-
 
                   <button className="secondary-button" type="button"
                     onClick={checkStatus} disabled={loading}>
@@ -306,7 +234,7 @@ const upiLink = paymentData
                   </p>
                   {paymentStatus === "REJECTED" && (
                     <p className="message">
-                      {rejectionReason || "Payment not confirmed. Check your UTR and try again."}
+                      {rejectionReason || "Payment could not be verified. Please contact a volunteer for assistance."}
                     </p>
                   )}
                   {message && <div className="message">{message}</div>}

@@ -209,7 +209,6 @@ async function login(event) {
               <p><strong>Quantity:</strong> {payment.quantity}</p>
               <p><strong>Amount:</strong> ₹{payment.amount}</p>
               <p><strong>Event date:</strong> {payment.event_date}</p>
-              <p><strong>UTR:</strong> {payment.payment_reference}</p>
               <p style={styles.muted}>
                 Submitted: {payment.payment_submitted_at
                   ? new Date(payment.payment_submitted_at).toLocaleString()
