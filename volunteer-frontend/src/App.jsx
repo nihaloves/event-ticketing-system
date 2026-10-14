@@ -114,33 +114,6 @@ export default function App() {
     }
   }
 
-  if (!token) {
-    return (
-      <main style={styles.page}>
-        <p style={{ letterSpacing: 2, fontSize: 12 }}>CINEMA TALKIES · TECHFEST</p>
-        <h1>Volunteer login</h1>
-        <p style={styles.muted}>Sign in to review UPI payments and validate attendee tickets.</p>
-
-        <form style={styles.panel} onSubmit={login}>
-          <label htmlFor="staff-password">Volunteer password</label>
-          <input
-            id="staff-password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-            style={styles.input}
-          />
-          <button type="submit" disabled={loading} style={{ ...styles.button, ...styles.primary }}>
-            {loading ? "Signing in..." : "Sign in"}
-          </button>
-          {message && <p role="status">{message}</p>}
-        </form>
-      </main>
-    );
-  }
-
   return (
     <main style={styles.page}>
       <p style={{ letterSpacing: 2, fontSize: 12 }}>CINEMA TALKIES · TECHFEST</p>
@@ -168,9 +141,34 @@ export default function App() {
         </button>
       </nav>
 
+      {!token && (
+        <form style={styles.panel} onSubmit={login}>
+          <h2 style={{ marginTop: 0 }}>Authorize volunteer actions</h2>
+          <p style={styles.muted}>
+            The dashboard is open. Authorize to review payments or scan tickets.
+          </p>
+          <label htmlFor="staff-password">Volunteer password</label>
+          <input
+            id="staff-password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            required
+            style={styles.input}
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            style={{ ...styles.button, ...styles.primary }}
+          >
+            {loading ? "Authorizing..." : "Authorize actions"}
+          </button>
+        </form>
+      )}
       {message && <p role="status">{message}</p>}
 
-      {tab === "payments" && (
+      {token && tab === "payments" && (
         <section>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
             <h2>Pending payments ({payments.length})</h2>
@@ -239,7 +237,8 @@ export default function App() {
         </section>
       )}
 
-      {tab === "scanner" && <Scanner token={token} />}
+      {token && tab === "scanner" && <Scanner token={token} />}
     </main>
   );
 }
+
