@@ -143,7 +143,9 @@ function createStaffToken() {
 function requireStaff(req, res, next) {
   const header = req.get("authorization") || "";
   const match = header.match(/^Bearer (.+)$/);
-  const accessKey = process.env.VOLUNTEER_ACCESS_KEY;
+ const accessKey =
+  process.env.STAFF_SCANNER_KEY ||
+  process.env.VOLUNTEER_ACCESS_KEY;
 
   if (accessKey && match) {
     const a = Buffer.from(accessKey);
