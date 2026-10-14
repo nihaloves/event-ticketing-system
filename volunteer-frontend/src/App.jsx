@@ -14,7 +14,7 @@ const styles = {
 
 export default function App() {
   const [password, setPassword] = useState("");
-  const [token, setToken] = useState("");
+  const [token, setToken] = useState(() => decodeURIComponent(window.location.hash.slice(1)));
   const [tab, setTab] = useState("payments");
   const [payments, setPayments] = useState([]);
   const [reasons, setReasons] = useState({});
@@ -141,31 +141,7 @@ export default function App() {
         </button>
       </nav>
 
-      {!token && (
-        <form style={styles.panel} onSubmit={login}>
-          <h2 style={{ marginTop: 0 }}>Authorize volunteer actions</h2>
-          <p style={styles.muted}>
-            The dashboard is open. Authorize to review payments or scan tickets.
-          </p>
-          <label htmlFor="staff-password">Volunteer password</label>
-          <input
-            id="staff-password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-            style={styles.input}
-          />
-          <button
-            type="submit"
-            disabled={loading}
-            style={{ ...styles.button, ...styles.primary }}
-          >
-            {loading ? "Authorizing..." : "Authorize actions"}
-          </button>
-        </form>
-      )}
+      {!token && <p style={styles.panel}>Access link is missing. Open the private volunteer link provided by the organizer.</p>}
       {message && <p role="status">{message}</p>}
 
       {token && tab === "payments" && (
