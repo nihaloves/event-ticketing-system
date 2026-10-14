@@ -141,14 +141,24 @@ function createStaffToken() {
 }
 
 function requireStaff(req, res, next) {
-  const secret = process.env.STAFF_TOKEN_SECRET;
   const header = req.get("authorization") || "";
   const match = header.match(/^Bearer (.+)$/);
+  const accessKey = process.env.VOLUNTEER_ACCESS_KEY;
 
+  if (accessKey && match) {
+    const a = Buffer.from(accessKey);
+    const b = Buffer.from(match[1]);
+    if (a.length === b.length && crypto.timingSafeEqual(a, b)) {
+      req.staff = { staff: "Shared-link volunteer" };
+      return next();
+    }
+  }
+
+  const secret = process.env.STAFF_TOKEN_SECRET;
   if (!secret || !match) {
     return res.status(401).json({
       success: false,
-      message: "Volunteer login required."
+      message: "Volunteer access required."
     });
   }
 
@@ -158,28 +168,21 @@ function requireStaff(req, res, next) {
   }
 
   const [payload, signature] = parts;
-  const expected = crypto
-    .createHmac("sha256", secret)
-    .update(payload)
-    .digest("base64url");
-
+  const expected = crypto.createHmac("sha256", secret)
+    .update(payload).digest("base64url");
   const actualBuffer = Buffer.from(signature);
   const expectedBuffer = Buffer.from(expected);
 
-  if (
-    actualBuffer.length !== expectedBuffer.length ||
-    !crypto.timingSafeEqual(actualBuffer, expectedBuffer)
-  ) {
+  if (actualBuffer.length !== expectedBuffer.length ||
+      !crypto.timingSafeEqual(actualBuffer, expectedBuffer)) {
     return res.status(401).json({ success: false, message: "Invalid session." });
   }
 
   try {
     const session = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
-
     if (!session.exp || session.exp <= Math.floor(Date.now() / 1000)) {
-      return res.status(401).json({ success: false, message: "Session expired. Log in again." });
+      return res.status(401).json({ success: false, message: "Session expired." });
     }
-
     req.staff = session;
     next();
   } catch {
