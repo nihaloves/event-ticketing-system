@@ -119,8 +119,8 @@ export default function App() {
       <p style={{ letterSpacing: 2, fontSize: 12 }}>CINEMA TALKIES · TECHFEST</p>
       <h1>Volunteer dashboard</h1>
       <p style={styles.muted}>Verify payments before granting entry.</p>
-
-      <nav style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 20 }}>
+      {token && (
+  <nav style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 20 }}>
         <button
           style={{ ...styles.button, ...(tab === "payments" ? styles.primary : styles.secondary) }}
           onClick={() => setTab("payments")}
@@ -139,9 +139,39 @@ export default function App() {
         >
           Sign out
         </button>
-      </nav>
+  </nav>
+)}
+      
+{!token && (
+  <section style={styles.panel}>
+    <h2>Volunteer sign in</h2>
+    <p style={styles.muted}>
+      Sign in with your authorized volunteer password to review payments and scan tickets.
+    </p>
 
-      {!token && <p style={styles.panel}>Access link is missing. Open the private volunteer link provided by the organizer.</p>}
+    <form onSubmit={login}>
+      <label htmlFor="volunteer-password">Volunteer password</label>
+      <input
+        id="volunteer-password"
+        type="password"
+        style={styles.input}
+        value={password}
+        onChange={(event) => setPassword(event.target.value)}
+        autoComplete="current-password"
+        required
+      />
+
+      <button
+        type="submit"
+        style={{ ...styles.button, ...styles.primary }}
+        disabled={loading}
+      >
+        {loading ? "Signing in..." : "Sign in"}
+      </button>
+    </form>
+  </section>
+)}
+
       {message && <p role="status">{message}</p>}
 
       {token && tab === "payments" && (
