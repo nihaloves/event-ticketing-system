@@ -22,30 +22,39 @@ export default function App() {
   const [message, setMessage] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
 
-  async function login(event) {
-    event.preventDefault();
-    setLoading(true);
-    setMessage("");
+  
+async function login(event) {
+  event.preventDefault();
+  setLoading(true);
+  setMessage("");
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/staff/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
-      });
-      const data = await response.json();
+  try {
+    const response = await fetch(`${API_BASE_URL}/staff/payments`, {
+      headers: {
+        Authorization: `Bearer ${password.trim()}`
+      }
+    });
 
-      if (!response.ok) throw new Error(data.message || "Login failed.");
-
-      setToken(data.token);
-      setPassword("");
-      setMessage("Login successful.");
-    } catch (error) {
-      setMessage(error.message || "Could not connect to the server.");
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      setMessage(
+        response.status === 401
+          ? "Invalid Staff Scanner Key."
+          : data.message || `Sign-in failed (${response.status}).`
+      );
+      return;
     }
+
+    setToken(password.trim());
+    setPassword("");
+    setMessage("Signed in successfully.");
+  } catch {
+    setMessage("Could not connect to the ticket server.");
+  } finally {
+    setLoading(false);
   }
+}
+
 
   async function loadPayments() {
     setLoading(true);
