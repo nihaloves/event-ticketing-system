@@ -72,9 +72,16 @@ function RegistrationPage() {
     }
   }
 
+  
   async function submitUtr(e) {
     e.preventDefault();
     if (!paymentData?.ticketId) return;
+
+    if (!utr.trim()) {
+      setMessage("Enter your UPI transaction reference.");
+      return;
+    }
+
     setLoading(true);
     setMessage("");
 
@@ -87,20 +94,24 @@ function RegistrationPage() {
           body: JSON.stringify({ transactionReference: utr.trim() }),
         }
       );
+
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Could not submit reference.");
+      if (!response.ok) {
+        throw new Error(data.message || "Could not submit your transaction reference.");
+      }
 
       setSubmitted(true);
       setPaymentStatus("PENDING");
       setRejectionReason("");
-      setMessage("Reference submitted. Your payment will be checked by a volunteer.");
+      setMessage(
+        data.message || "Transaction reference submitted. A volunteer will verify your payment."
+      );
     } catch (error) {
       setMessage(error.message || "Could not connect to the server.");
     } finally {
       setLoading(false);
     }
   }
-
   async function checkStatus() {
     if (!paymentData?.ticketId) return;
     setLoading(true);
@@ -251,21 +262,39 @@ const upiLink = paymentData
 
                   <p className="ticket-reference">Booking reference: {paymentData.ticketId}</p>
 
-                  <form onSubmit={submitUtr}>
-                    <label className="input-card">
-                      <span className="input-content">
-                        <span className="input-label">UTR / TRANSACTION REFERENCE</span>
-                        <input value={utr} onChange={(e) => setUtr(e.target.value)}
-                          minLength={6} maxLength={100} required
-                          placeholder="Enter transaction reference"
-                          disabled={submitted && paymentStatus !== "REJECTED"} />
-                      </span>
-                    </label>
-                    <button className="continue-button" type="submit"
-                      disabled={loading || (submitted && paymentStatus !== "REJECTED")}>
-                      {loading ? "Please wait..." : "Submit transaction reference"}
-                    </button>
-                  </form>
+                  
+<form onSubmit={submitUtr}>
+  <label className="input-card">
+    <span className="input-content">
+      <span className="input-label">UTR / TRANSACTION REFERENCE</span>
+      <input
+        type="text"
+        value={utr}
+        onChange={(e) => setUtr(e.target.value)}
+        placeholder="Enter your UPI transaction reference"
+        minLength={6}
+        maxLength={100}
+        pattern="[a-zA-Z0-9-]+"
+        required
+        disabled={loading || (submitted && paymentStatus !== "REJECTED")}
+        autoComplete="off"
+      />
+    </span>
+  </label>
+
+  <button
+    className="continue-button"
+    type="submit"
+    disabled={loading || (submitted && paymentStatus !== "REJECTED")}
+  >
+    {loading
+      ? "Please wait..."
+      : submitted && paymentStatus !== "REJECTED"
+        ? "Payment notification submitted"
+        : "I've paid"}
+  </button>
+</form>
+
 
                   <button className="secondary-button" type="button"
                     onClick={checkStatus} disabled={loading}>
@@ -351,3 +380,6 @@ function App() {
 }
 
 export default App;
+
+
+

@@ -215,6 +215,74 @@ app.post("/staff/login", (req, res) => {
 
 // Customer submits the UPI transaction reference.
 // Submission alone never grants access to the ticket QR.
+// Customer reports that they have paid.
+// This notification does NOT approve payment.
+app.post("/tickets/:ticketId/submit-payment", (req, res) => {
+  const ticket = db.prepare(`
+    SELECT ticket_id, payment_status, payment_submitted_at
+    FROM tickets
+    WHERE ticket_id = ?
+  `).get(req.params.ticketId);
+
+  if (!ticket) {
+    return res.status(404).json({
+      success: false,
+      message: "Booking not found."
+    });
+  }
+
+  if (ticket.payment_status === "PAID") {
+    return res.status(409).json({
+      success: false,
+      message: "Payment is already confirmed."
+    });
+  }
+
+  if (ticket.payment_status === "PENDING" && ticket.payment_submitted_at) {
+    return res.json({
+      success: true,
+      message: "Your payment notification is already submitted.",
+      paymentStatus: "PENDING"
+    });
+  }
+
+  if (!["PENDING", "REJECTED"].includes(ticket.payment_status)) {
+    return res.status(409).json({
+      success: false,
+      message: "This booking cannot submit a payment notification."
+    });
+  }
+
+  const result = db.prepare(`
+    UPDATE tickets
+    SET payment_status = 'PENDING',
+        payment_reference = NULL,
+        payment_rejection_reason = NULL,
+        payment_submitted_at = ?,
+        payment_reviewed_at = NULL,
+        payment_reviewed_by = NULL
+    WHERE ticket_id = ?
+      AND payment_status IN ('PENDING', 'REJECTED')
+      AND payment_submitted_at IS ?
+  `).run(
+    new Date().toISOString(),
+    ticket.ticket_id,
+    ticket.payment_submitted_at ?? null
+  );
+
+  if (result.changes !== 1) {
+    return res.status(409).json({
+      success: false,
+      message: "Booking status changed. Please check payment status."
+    });
+  }
+
+  return res.json({
+    success: true,
+    message: "Payment notification submitted for volunteer verification.",
+    paymentStatus: "PENDING"
+  });
+});
 app.post("/tickets/:ticketId/submit-utr", (req, res) => {
   const reference = typeof req.body?.transactionReference === "string"
     ? req.body.transactionReference.trim()
@@ -301,7 +369,7 @@ app.get("/staff/payments", requireStaff, (req, res) => {
            payment_reference, payment_submitted_at
     FROM tickets
     WHERE payment_status = 'PENDING'
-      AND payment_reference IS NOT NULL
+      AND payment_submitted_at IS NOT NULL
     ORDER BY payment_submitted_at ASC
   `).all();
 
@@ -317,7 +385,7 @@ app.post("/staff/payments/:ticketId/approve", requireStaff, (req, res) => {
         payment_reviewed_by = ?
     WHERE ticket_id = ?
       AND payment_status = 'PENDING'
-      AND payment_reference IS NOT NULL
+      AND payment_submitted_at IS NOT NULL
   `).run(
     new Date().toISOString(),
     req.staff.staff,
@@ -356,7 +424,7 @@ app.post("/staff/payments/:ticketId/reject", requireStaff, (req, res) => {
         payment_reviewed_by = ?
     WHERE ticket_id = ?
       AND payment_status = 'PENDING'
-      AND payment_reference IS NOT NULL
+      AND payment_submitted_at IS NOT NULL
   `).run(
     reason,
     new Date().toISOString(),
@@ -382,7 +450,7 @@ app.get("/tickets", (req, res) => {
   });
 });
 // SCAN TICKET - FAST ATOMIC ENTRY CHECK
-app.post("/tickets/:ticketId/scan", (req, res) => {
+app.post("/tickets/:ticketId/scan", requireStaff, (req, res) => {
   const ticketId = req.params.ticketId;
 
   const now = new Date().toISOString();
@@ -541,6 +609,8 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Cinema Talkies server running on http://localhost:${PORT}`);
 });
+
+
 
 
 
