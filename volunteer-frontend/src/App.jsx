@@ -14,7 +14,7 @@ const styles = {
 
 export default function App() {
   const [password, setPassword] = useState("");
-  const [token, setToken] = useState(() => decodeURIComponent(window.location.hash.slice(1)));
+  const [token, setToken] = useState("");
   const [tab, setTab] = useState("payments");
   const [payments, setPayments] = useState([]);
   const [reasons, setReasons] = useState({});
